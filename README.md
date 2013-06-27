@@ -1,8 +1,14 @@
 playing
 =======
 
-Code I've written for fun in various languages
+Code I've written for fun/practice in various languages.
 
-I'm still in the process of cleaning/adding a lot of code.
+More informative folder descriptions:
 
-This does NOT contain any homework assignments
+ML     : Machine Learning
+algo   : Algorithms
+cell   : Cellular Automata
+maths  : Math related
+nlp    : Natural Language Processing
+puzzle : puzzles (project Euler, 99 Haskell problems)
+types  : Parsing, type theory inspired stuff
