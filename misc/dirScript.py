@@ -9,7 +9,7 @@ MAC_SAVEPATH = "~/musicToTransfer"
 
 # find . -name "*.mp3" | wc -l
 # ==> 21530, rounding up for safety
-NUM_ITEMS =  24000
+NUM_ITEMS =  240000
 ERROR_RATE = 0.01
 
 def makeData(filepath, bloomname):
@@ -20,7 +20,9 @@ def makeData(filepath, bloomname):
         #put all that in the bloom filter
         #print map(lambda f: os.path.join(root,f),files)
         for fixed in  map(lambda f: os.path.join(root,f),files):
-            bf.add(fixed)
+            #turns out ubuntu files have a dash in them
+            #mac ones don't
+            bf.add(fixed.replace(" -",""))
 
     pickle.dump(bf,open(bloomname,'wb'))
 
