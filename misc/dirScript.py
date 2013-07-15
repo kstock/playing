@@ -1,58 +1,55 @@
-import os,sys,pickle
-FILEPATH = "/home/kstock/Music/"
+import os
+#import sys
+from pybloomfilter import BloomFilter
+import shutil
 
-macpath = 'macMusic.p'
-savepath = 'asusMusic.p'
-testpath = 'asusMusicPRIME.p'
-testpath2 = 'asusMusicPRIME2.p'
+ASUS_FILEPATH = "/home/kstock/Music/"
+MAC_FILEPATH = "/home/kstock/Music/"
 
-#FILEPATH = "."
+MAC_SAVEPATH = "~/musicToTransfer"
 
-def makeData(filename,filepath=FILEPATH ):
+# find . -name "*.mp3" | wc -l
+# ==> 21530, rounding up for safety
+NUM_ITEMS =  220000
+ERROR_RATE = 0.01
 
-    a = {os.path.basename(root):files for root,dirs,files in os.walk(filepath) }
-    pickle.dump(a, open(filename, 'wb'))
+def makeData(filepath, bloomname):
+    bf = BloomFilter(NUM_ITEMS, ERROR_RATE, bloomname+'.bloom')
 
-def fixData(filename):
-    data = pickle.load(open(filename, 'rb'))
-    data = {os.path.basename(path):songs for (path,songs)
-                                        in data.iteritems()}
+    for root,dirs,files in os.walk(filepath):
+        #for each file, concat the path directory
+        #put all that in the bloom filter
+        #print map(lambda f: os.path.join(root,f),files)
+        bf.update( map(lambda f: os.path.join(root,f),files) )
 
-    pickle.dump(data, open(filename, 'wb'))
+    return bf
 
-def songDiff(left,right):
-    leftUniq = []
-    #rightUniq is right after all of the left stuff was removed
+def songDiff(testInclusionPath,saveDifferencePath,bfPath):
 
-    for song in left:
-        if song not in right:
-            leftUniq.append(song)
-        else:
-            right.remove(song)
+    bf = BloomFilter.open(bfPath)
 
-    return (leftUniq,right)
+    for root,dirs,files in os.walk(testInclusionPath):
+        for f in map( lambda f: os.path.join(root,f), files):
+            if f not in bf:
+                print f
 
+                savePath = saveDifferencePath+root
 
-def diff(path1 = testpath2,path2 = testpath):
-    smaller = pickle.load(open(path1, 'rb'))
-    bigger = pickle.load(open(path2, 'rb'))
+                #TODO possible issue with race condition
+                #don't think this is cross platform
+                if not os.path.exists(savePath):
+                    os.makedirs( savePath )
 
-    print len(smaller),len(bigger)
-    delta = []
-    for path in bigger:
-        if path not in smaller:
-            delta.append( (path, ( [],bigger[path] ) ) )
-        elif smaller[path] != bigger[path]:
-            delta.append((path, songDiff(smaller[path],bigger[path])))
+                shutil.copy2(f,savePath)
 
-    return delta
 
 if __name__ == "__main__":
+    pass
 
-    if len(sys.argv) > 1:
-        diff(sys.argv[1])
-    else:
-        diff(FILEPATH)
+#    if len(sys.argv) > 1:
+#        diff(sys.argv[1])
+#    else:
+#        diff(FILEPATH)
 
 
 
